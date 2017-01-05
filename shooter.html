@@ -48,14 +48,6 @@
                     .attr('x', point[0] - playerSize/2);
                     
             }).on('click', function(){
-                console.log(typeof getPlayerX().x);
-                //blink player
-                player.transition()
-                        .duration(30)
-                        .style('fill', 'red')
-                    .transition()
-                        .delay(30)
-                        .style('fill', 'black');
                 //fire bullet
                 svg.append('circle')
                         .attr('cx', +getPlayerX().x + playerSize/2)
@@ -63,7 +55,9 @@
                         .attr('r', bulletRadius)
                         .attr('fill', 'red')
                     .transition()
-                        .delay(10)
+                        .duration(700)
+                        .attr('cy', -bulletRadius)
+                        .ease(d3.easeLinear)
                         .remove();
             });
 
