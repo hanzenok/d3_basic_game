@@ -7,92 +7,130 @@
             margin: 5px;
         }
         
-        .container {}
+        .container {
+            position: relative;
+        }
         
+        .score_container {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
         svg {
             display: block;
             margin: auto;
             border: 2px solid black;
             background-color: lightgray;
         }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(56, 95, 158, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay span {
+            color: white;
+            font-family: Helvetica;
+            font-size: 80px;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 
 <body>
 
     <div class="container">
+        <div class="score_container">
+            <span>score:</span>
+            <span class="score">0</span>
+        </div>
         <svg>
             <rect id="player"></rect>
         </svg>
+        <div class="overlay"><span>You've Won!</span></div>
     </div>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
 
         //global vars
-        var width = 800;
-        var height = 600;
-        var padding = 5;
-        var playerId = 'player';
-        var playerSize = 40;
+        var WIDTH = 800;
+        var HEIGHT = 600;
+        var PADDING = 5;
+        var PLAYER_ID = 'player';
+        var PLAYER_SIZE = 40;
+        var MOVE_DELTA = 2;
+        var BULLET_RADIUS = 5;
+        var MAX_SCORE = 20;
+
+        //global methods
         var getPlayerX = function(){return +player.attr('x');};
         var getEnemyX = function(){return +enemy.attr('x');};
-        var getEnemyY = function(){return height/4;};
-        var moveDelta = 2;
-        var bulletRadius = 10;
+        var getEnemyY = function(){return HEIGHT/4;};
 
         //svg
         //attaching listeners
         var svg = d3.select('svg')
-            .attr('width', width)
-            .attr('height', height)
+            .attr('width', WIDTH)
+            .attr('height', HEIGHT)
             //move player
             .on('mousemove', function() {
                 var point = d3.mouse(this);
                 player.transition()
                     .duration(50)
-                    .attr('x', point[0] - playerSize/2);
+                    .attr('x', point[0] - PLAYER_SIZE/2);
                     
             })
             //fire bullet
             .on('click', function() {
                 svg.append('circle')
-                        .attr('cx', getPlayerX() + playerSize/2)
-                        .attr('cy', height - playerSize - padding - bulletRadius)
-                        .attr('r', bulletRadius)
+                        .attr('cx', getPlayerX() + PLAYER_SIZE/2)
+                        .attr('cy', HEIGHT - PLAYER_SIZE - PADDING - BULLET_RADIUS)
+                        .attr('r', BULLET_RADIUS)
                         .attr('fill', 'red')
                     .transition()
                         .duration(700)
-                        .attr('cy', -bulletRadius)
+                        .attr('cy', -BULLET_RADIUS)
                         .ease(d3.easeLinear)
                         .remove();
             });
 
         //player
-        var player = d3.select('#' + playerId)
-            .attr('width', playerSize)
-            .attr('height', playerSize)
-            .attr('x', width/2 - playerSize/2)
-            .attr('y', height - playerSize - padding)
-            .style('fill', 'black')
+        var player = d3.select('#' + PLAYER_ID)
+            .attr('width', PLAYER_SIZE)
+            .attr('height', PLAYER_SIZE)
+            .attr('x', WIDTH/2 - PLAYER_SIZE/2)
+            .attr('y', HEIGHT - PLAYER_SIZE - PADDING)
+            .style('fill', 'black');
         
         //enemy
         var enemy = svg.append('rect')
             .attr('id', 'enemy')
-            .attr('width', playerSize)
-            .attr('height', playerSize)
-            .attr('x', width/2 - playerSize/2)
-            .attr('y', height/4)
-            .style('fill', 'green')
+            .attr('width', PLAYER_SIZE)
+            .attr('height', PLAYER_SIZE)
+            .attr('x', WIDTH/2 - PLAYER_SIZE/2)
+            .attr('y', HEIGHT/4)
+            .style('fill', 'green');
 
 
         function move() {
             enemy.attr('x', function() {
                 var enemyX = getEnemyX();
-                if (enemyX > width - playerSize || enemyX < 0){
-                    moveDelta *= -1;
+                if (enemyX > WIDTH - PLAYER_SIZE || enemyX < 0){
+                    MOVE_DELTA *= -1;
                 }
-                return enemyX += moveDelta;
+                return enemyX += MOVE_DELTA;
             })
             .call(collide);
 
@@ -106,15 +144,18 @@
   
             d3.selectAll('circle')
                 .each(function() {
-
                     var box = this.getBBox();
                     var bulletY = box.y;
                     var bulletX = box.x;
-                    
-                    if (bulletX + bulletRadius >= enemyX && bulletX - bulletRadius <= enemyX + playerSize) {
-                        if(bulletY + bulletRadius <= enemyY + playerSize && bulletY + bulletRadius >= enemyY){
+                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + PLAYER_SIZE) {
+                        if(bulletY + BULLET_RADIUS <= enemyY + PLAYER_SIZE && bulletY + BULLET_RADIUS >= enemyY){
                             d3.select(this).remove();
-                            console.log(++score);
+                            d3.select('.score').html(++score);
+
+                            if (score >= MAX_SCORE){
+                                d3.select('.overlay')
+                                    .style('display', 'flex');
+                            }
                         }
                     }
                 });
