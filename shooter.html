@@ -18,7 +18,11 @@
 
 <body>
 
-    <div class="container"> </div>
+    <div class="container">
+        <svg>
+            <rect id="player"></rect>
+        </svg>
+    </div>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
@@ -26,48 +30,48 @@
         //global vars
         var width = 800;
         var height = 600;
-        var size = 40;
         var padding = 5;
         var playerId = 'player';
+        var player = d3.select('#' + playerId);
+        var playerSize = 40;
+        var getPlayerX = function(){return {x: player.attr('x')};}
         var moveDelta = 20;
+        var bulletRadius = 5;
 
-        var svg = d3.select('.container').append('svg')
+        var svg = d3.select('svg')
             .attr('width', width)
             .attr('height', height)
             .on('mousemove', function(){
-                var player = d3.select('#' + playerId);
                 var point = d3.mouse(this);
                 player.transition()
                     .duration(50)
-                    .attr('x', point[0] - size/2);
+                    .attr('x', point[0] - playerSize/2);
                     
-            }).on('click', function(a,b){
+            }).on('click', function(){
+                console.log(typeof getPlayerX().x);
                 //blink player
-                var player = d3.select('#' + playerId);
                 player.transition()
                         .duration(30)
                         .style('fill', 'red')
                     .transition()
                         .delay(30)
                         .style('fill', 'black');
-                
                 //fire bullet
                 svg.append('circle')
-                        .attr('cx', width/2)
-                        .attr('cy', height/2)
-                        .attr('r', 5)
+                        .attr('cx', +getPlayerX().x + playerSize/2)
+                        .attr('cy', height - playerSize - padding - bulletRadius)
+                        .attr('r', bulletRadius)
                         .attr('fill', 'red')
                     .transition()
-                        .delay(300)
+                        .delay(10)
                         .remove();
             });
 
-        svg.append('rect')
-            .attr('id', playerId)
-            .attr('width', size)
-            .attr('height', size)
-            .attr('x', width/2 - size/2)
-            .attr('y', height - size - padding)
+        d3.select('#' + playerId)
+            .attr('width', playerSize)
+            .attr('height', playerSize)
+            .attr('x', width/2 - playerSize/2)
+            .attr('y', height - playerSize - padding)
             .style('fill', 'black')
         
     </script>
