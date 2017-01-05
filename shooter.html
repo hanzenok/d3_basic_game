@@ -39,7 +39,7 @@
         var getEnemyX = function(){return +enemy.attr('x');};
         var getEnemyY = function(){return height/4;};
         var moveDelta = 2;
-        var bulletRadius = 5;
+        var bulletRadius = 10;
 
         //svg
         //attaching listeners
@@ -112,7 +112,7 @@
                     var bulletX = box.x;
                     
                     if (bulletX + bulletRadius >= enemyX && bulletX - bulletRadius <= enemyX + playerSize) {
-                        if(bulletY - bulletRadius <= enemyY + playerSize){
+                        if(bulletY + bulletRadius <= enemyY + playerSize && bulletY + bulletRadius >= enemyY){
                             d3.select(this).remove();
                             console.log(++score);
                         }
