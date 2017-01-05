@@ -32,25 +32,29 @@
         var height = 600;
         var padding = 5;
         var playerId = 'player';
-        var player = d3.select('#' + playerId);
         var playerSize = 40;
-        var getPlayerX = function(){return {x: player.attr('x')};}
-        var moveDelta = 20;
+        var getPlayerX = function(){return +player.attr('x');};
+        var getEnemyX = function() {return +enemy.attr('x');};
+        var moveDelta = 2;
         var bulletRadius = 5;
 
+        //svg
+        //attaching listeners
         var svg = d3.select('svg')
             .attr('width', width)
             .attr('height', height)
+            //move player
             .on('mousemove', function(){
                 var point = d3.mouse(this);
                 player.transition()
                     .duration(50)
                     .attr('x', point[0] - playerSize/2);
                     
-            }).on('click', function(){
-                //fire bullet
+            })
+            //fire bullet
+            .on('click', function(){
                 svg.append('circle')
-                        .attr('cx', +getPlayerX().x + playerSize/2)
+                        .attr('cx', getPlayerX() + playerSize/2)
                         .attr('cy', height - playerSize - padding - bulletRadius)
                         .attr('r', bulletRadius)
                         .attr('fill', 'red')
@@ -61,12 +65,37 @@
                         .remove();
             });
 
-        d3.select('#' + playerId)
+        //player
+        var player = d3.select('#' + playerId)
             .attr('width', playerSize)
             .attr('height', playerSize)
             .attr('x', width/2 - playerSize/2)
             .attr('y', height - playerSize - padding)
             .style('fill', 'black')
         
+        //enemy
+        var enemy = svg.append('rect')
+            .attr('id', 'enemy')
+            .attr('width', playerSize)
+            .attr('height', playerSize)
+            .attr('x', width/2 - playerSize/2)
+            .attr('y', height/4)
+            .style('fill', 'green')
+
+
+        function move() {
+            enemy.attr('x', function(){
+                var enemyX = getEnemyX();
+                if (enemyX > width - playerSize || enemyX < 0){
+                    moveDelta *= -1;
+                }
+                return enemyX += moveDelta;
+            });
+
+            window.requestAnimationFrame(move);
+        }
+
+        window.requestAnimationFrame(move);
+
     </script>
 </body>
