@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            margin: 5px;
+        }
+        .container {
+        }
+        svg {
+            display: block;
+            margin: auto;
+            border: 2px solid black;
+            background-color: lightgray;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container"> </div>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+
+        //global vars
+        var width = 800;
+        var height = 600;
+        var size = 40;
+        var padding = 5;
+        var playerId = 'player';
+        var moveDelta = 20;
+
+        var svg = d3.select('.container').append('svg')
+            .attr('width', width)
+            .attr('height', height)
+            .on('mousemove', function(){
+                var player = d3.select('#' + playerId);
+                var point = d3.mouse(this);
+                player.transition()
+                    .duration(50)
+                    .attr('x', point[0] - size/2);
+                    
+            }).on('click', function(a,b){
+                //blink player
+                var player = d3.select('#' + playerId);
+                player.transition()
+                        .duration(30)
+                        .style('fill', 'red')
+                    .transition()
+                        .delay(30)
+                        .style('fill', 'black');
+                
+                //fire bullet
+                svg.append('circle')
+                        .attr('cx', width/2)
+                        .attr('cy', height/2)
+                        .attr('r', 5)
+                        .attr('fill', 'red')
+                    .transition()
+                        .delay(300)
+                        .remove();
+            });
+
+        svg.append('rect')
+            .attr('id', playerId)
+            .attr('width', size)
+            .attr('height', size)
+            .attr('x', width/2 - size/2)
+            .attr('y', height - size - padding)
+            .style('fill', 'black')
+        
+    </script>
+</body>
