@@ -11,7 +11,7 @@
             position: relative;
         }
         
-        .score_container {
+        .failed_shots_container {
             position: absolute;
             top: 10px;
             width: 100%;
@@ -73,9 +73,10 @@
 <body>
 
     <div class="container">
-        <div class="score_container">
-            <span>Score:</span>
-            <span class="score">0</span>
+        <div class="failed_shots_container">
+            <span>Missed:&nbsp;</span>
+            <span class="failed_shots">0</span>
+            <span>/10</span>
         </div>
         <svg>
             <defs>
@@ -91,7 +92,8 @@
             <rect id="enemy" filter="url(#shadow)"></rect>
             <rect id="enemy_life"></rect>
         </svg>
-        <div class="overlay"><span>You've Won!</span></div>
+        <div id="won" class="overlay"><span>You've Won!</span></div>
+        <div id="lost" class="overlay"><span>You've Lost!</span></div>
     </div>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -101,15 +103,22 @@
         var WIDTH = 800;
         var HEIGHT = 600;
         var PADDING = 5;
-        var PLAYER_ID = 'player';
-        var ENEMY_ID = 'enemy';
-        var ENEMY_LIFE_ID = ENEMY_ID + '_life';
         var RECT_SIZE = 40;
         var RECT_RADIUS = 5;
-        var MOVE_DELTA = 2;
+        var MOVE_DELTA = 4;
         var BULLET_RADIUS = 6;
-        var SCORE = 0;
-        var MAX_SCORE = 20;
+        var SHOTS_SUCCEEDED = 0;
+        var SHOTS_FAILED = 0;
+        var MAX_SHOTS_FAILED = 10;
+        var MAX_SHOTS_SUCCEEDED = 20; // = nb enemy lifes
+
+        //css selectors
+        var PLAYER_SEL = '#player';
+        var ENEMY_SEL = '#enemy';
+        var ENEMY_LIFE_SEL = ENEMY_SEL + '_life';
+        var SCOREBOARD_SEL = '.failed_shots';
+        var WIN_MESS_SEL = '#won';
+        var LOST_MESS_SEL = '#lost';
 
         //getters
         var getPlayerX = function(){return +player.attr('x');};
@@ -125,7 +134,7 @@
             .on('click', fireBullet);
 
         //player
-        var player = d3.select('#' + PLAYER_ID)
+        var player = d3.select(PLAYER_SEL)
             .attr('width', RECT_SIZE)
             .attr('height', RECT_SIZE)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
@@ -134,21 +143,25 @@
             .attr('ry', RECT_RADIUS);
         
         //enemy
-        var enemy = d3.select('#' + ENEMY_ID)
+        var enemy = d3.select(ENEMY_SEL)
             .attr('width', RECT_SIZE)
             .attr('height', RECT_SIZE)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
-            .attr('y', HEIGHT/4)
+            .attr('y', getEnemyY())
             .attr('rx', RECT_RADIUS)
             .attr('ry', RECT_RADIUS);
 
-        var enemy_life = d3.select('#' + ENEMY_LIFE_ID)
+        //enemy life
+        var enemy_life = d3.select(ENEMY_LIFE_SEL)
             .attr('width', RECT_SIZE)
             .attr('height', 0)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
-            .attr('y', HEIGHT/4)
+            .attr('y', getEnemyY())
             .attr('rx', RECT_RADIUS)
             .attr('ry', RECT_RADIUS);
+
+        //start the loop
+        window.requestAnimationFrame(loop);
 
         function movePlayer() {
             var point = d3.mouse(this);
@@ -179,25 +192,42 @@
                     var bulletX = box.x;
                     var bulletY = box.y;
 
-                    //if collision
-                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + RECT_SIZE) {
-                        if(bulletY + BULLET_RADIUS <= enemyY + RECT_SIZE && bulletY + BULLET_RADIUS >= enemyY) {
-                            d3.select(this).remove();
-                            d3.select('.score').html(++SCORE);
+                    //if bullet landed
+                    if ((bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + RECT_SIZE) &&
+                        (bulletY + BULLET_RADIUS <= enemyY + RECT_SIZE && bulletY + BULLET_RADIUS >= enemyY)) {
 
-                            //decrese life
-                            d3.select('#' + ENEMY_LIFE_ID)
-                                .attr('height', SCORE*RECT_SIZE/MAX_SCORE);
-
-                            //if won
-                            if (SCORE >= MAX_SCORE) {
-                                d3.select('.overlay')
-                                    .style('display', 'flex');
-                                
-                            }
-                        }
+                        d3.select(this)
+                            .call(shotSucceeded)
+                            .remove()
+                            .transition(); //stop the bullets transition
                     }
                 });
+        }
+
+        function shotSucceeded() {
+            //count shots
+            SHOTS_SUCCEEDED++;
+
+            //decrese life
+            d3.select(ENEMY_LIFE_SEL)
+                .attr('height', SHOTS_SUCCEEDED*RECT_SIZE/MAX_SHOTS_SUCCEEDED);
+
+            //if won
+            if (SHOTS_SUCCEEDED >= MAX_SHOTS_SUCCEEDED) {
+                d3.select(WIN_MESS_SEL)
+                    .style('display', 'flex');
+            }
+        }
+
+        function shotFailed() {
+            //count and show missed shots
+            d3.select(SCOREBOARD_SEL).html(++SHOTS_FAILED);
+
+            //if lost
+            if (SHOTS_FAILED >= MAX_SHOTS_FAILED) {
+                d3.select(LOST_MESS_SEL)
+                    .style('display', 'flex');
+            }
         }
 
         function fireBullet() {
@@ -211,6 +241,7 @@
                     .duration(700)
                     .attr('cy', -BULLET_RADIUS)
                     .ease(d3.easeLinear)
+                    .on('end', shotFailed) //called when the transition is finished
                     .remove();
         }
 
@@ -224,9 +255,6 @@
             //call itself
             window.requestAnimationFrame(loop);
         }
-
-        //start the loop
-        window.requestAnimationFrame(loop);
 
     </script>
 </body>
