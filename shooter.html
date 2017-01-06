@@ -56,6 +56,13 @@
             <span class="score">0</span>
         </div>
         <svg>
+            <defs>
+                <filter id="filter" x="0" y="0" width="200%" height="200%">
+                    <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
+                    <feGaussianBlur result="blurOut" in="offOut" stdDeviation="2" />
+                    <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+                </filter>
+            </defs>
             <rect id="player"></rect>
         </svg>
         <div class="overlay"><span>You've Won!</span></div>
@@ -90,6 +97,7 @@
 
         //player
         var player = d3.select('#' + PLAYER_ID)
+            .attr('filter', 'url(#enemy_filter)')
             .attr('width', PLAYER_SIZE)
             .attr('height', PLAYER_SIZE)
             .attr('x', WIDTH/2 - PLAYER_SIZE/2)
@@ -99,6 +107,7 @@
         //enemy
         var enemy = svg.append('rect')
             .attr('id', 'enemy')
+            .attr('filter', 'url(#enemy_filter)')
             .attr('width', PLAYER_SIZE)
             .attr('height', PLAYER_SIZE)
             .attr('x', WIDTH/2 - PLAYER_SIZE/2)
