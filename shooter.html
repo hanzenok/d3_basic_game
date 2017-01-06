@@ -72,6 +72,7 @@
         var PLAYER_SIZE = 40;
         var MOVE_DELTA = 2;
         var BULLET_RADIUS = 5;
+        var SCORE = 0;
         var MAX_SCORE = 20;
 
         //global methods
@@ -84,27 +85,8 @@
         var svg = d3.select('svg')
             .attr('width', WIDTH)
             .attr('height', HEIGHT)
-            //move player
-            .on('mousemove', function() {
-                var point = d3.mouse(this);
-                player.transition()
-                    .duration(50)
-                    .attr('x', point[0] - PLAYER_SIZE/2);
-                    
-            })
-            //fire bullet
-            .on('click', function() {
-                svg.append('circle')
-                        .attr('cx', getPlayerX() + PLAYER_SIZE/2)
-                        .attr('cy', HEIGHT - PLAYER_SIZE - PADDING - BULLET_RADIUS)
-                        .attr('r', BULLET_RADIUS)
-                        .attr('fill', 'red')
-                    .transition()
-                        .duration(700)
-                        .attr('cy', -BULLET_RADIUS)
-                        .ease(d3.easeLinear)
-                        .remove();
-            });
+            .on('mousemove', movePlayer)
+            .on('click', fireBullet);
 
         //player
         var player = d3.select('#' + PLAYER_ID)
@@ -123,36 +105,62 @@
             .attr('y', HEIGHT/4)
             .style('fill', 'green');
 
+        function movePlayer() {
+            var point = d3.mouse(this);
+            player.transition()
+                .duration(50)
+                .attr('x', point[0] - PLAYER_SIZE/2);
+        }
 
-        function move() {
+        function fireBullet() {
+            svg.append('circle')
+                    .attr('cx', getPlayerX() + PLAYER_SIZE/2)
+                    .attr('cy', HEIGHT - PLAYER_SIZE - PADDING - BULLET_RADIUS)
+                    .attr('r', BULLET_RADIUS)
+                    .attr('fill', 'red')
+                .transition()
+                    .duration(700)
+                    .attr('cy', -BULLET_RADIUS)
+                    .ease(d3.easeLinear)
+                    .remove();
+        }
+
+        function moveEnemy() {
             enemy.attr('x', function() {
                 var enemyX = getEnemyX();
+
+                //if border
                 if (enemyX > WIDTH - PLAYER_SIZE || enemyX < 0){
                     MOVE_DELTA *= -1;
                 }
                 return enemyX += MOVE_DELTA;
             })
-            .call(collide);
+            .call(detectCollision); //call a collision detection function
 
-            window.requestAnimationFrame(move);
+            //call itself to do an infinite loop
+            window.requestAnimationFrame(moveEnemy);
         }
 
-        var score = 0;
-        function collide() {
+        function detectCollision() {
+            //enemy
             var enemyX = getEnemyX();
             var enemyY = getEnemyY();
   
+            //every bullet
             d3.selectAll('circle')
                 .each(function() {
                     var box = this.getBBox();
                     var bulletY = box.y;
                     var bulletX = box.x;
-                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + PLAYER_SIZE) {
-                        if(bulletY + BULLET_RADIUS <= enemyY + PLAYER_SIZE && bulletY + BULLET_RADIUS >= enemyY){
-                            d3.select(this).remove();
-                            d3.select('.score').html(++score);
 
-                            if (score >= MAX_SCORE){
+                    //if collision
+                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + PLAYER_SIZE) {
+                        if(bulletY + BULLET_RADIUS <= enemyY + PLAYER_SIZE && bulletY + BULLET_RADIUS >= enemyY) {
+                            d3.select(this).remove();
+                            d3.select('.score').html(++SCORE);
+
+                            //if won
+                            if (SCORE >= MAX_SCORE) {
                                 d3.select('.overlay')
                                     .style('display', 'flex');
                             }
@@ -161,7 +169,8 @@
                 });
         }
 
-        window.requestAnimationFrame(move);
+        //start the enemy moving loop
+        window.requestAnimationFrame(moveEnemy);
 
     </script>
 </body>
