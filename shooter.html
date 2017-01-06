@@ -57,13 +57,14 @@
         </div>
         <svg>
             <defs>
-                <filter id="filter" x="0" y="0" width="200%" height="200%">
-                    <feOffset result="offOut" in="SourceAlpha" dx="2" dy="2" />
-                    <feGaussianBlur result="blurOut" in="offOut" stdDeviation="2" />
+                <filter id="shadow" x="0" y="0" width="200%" height="200%">
+                    <feOffset result="offOut" in="SourceAlpha" dx="1" dy="1" />
+                    <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
                     <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
                 </filter>
             </defs>
-            <rect id="player"></rect>
+            <rect id="player" filter="url(#shadow)"></rect>
+            <rect id="enemy" filter="url(#shadow)"></rect>
         </svg>
         <div class="overlay"><span>You've Won!</span></div>
     </div>
@@ -76,13 +77,14 @@
         var HEIGHT = 600;
         var PADDING = 5;
         var PLAYER_ID = 'player';
-        var PLAYER_SIZE = 40;
+        var ENEMY_ID = 'enemy';
+        var RECT_SIZE = 40;
         var MOVE_DELTA = 2;
         var BULLET_RADIUS = 5;
         var SCORE = 0;
         var MAX_SCORE = 20;
 
-        //global methods
+        //getters
         var getPlayerX = function(){return +player.attr('x');};
         var getEnemyX = function(){return +enemy.attr('x');};
         var getEnemyY = function(){return HEIGHT/4;};
@@ -97,20 +99,17 @@
 
         //player
         var player = d3.select('#' + PLAYER_ID)
-            .attr('filter', 'url(#enemy_filter)')
-            .attr('width', PLAYER_SIZE)
-            .attr('height', PLAYER_SIZE)
-            .attr('x', WIDTH/2 - PLAYER_SIZE/2)
-            .attr('y', HEIGHT - PLAYER_SIZE - PADDING)
+            .attr('width', RECT_SIZE)
+            .attr('height', RECT_SIZE)
+            .attr('x', WIDTH/2 - RECT_SIZE/2)
+            .attr('y', HEIGHT - RECT_SIZE - PADDING)
             .style('fill', 'black');
         
         //enemy
-        var enemy = svg.append('rect')
-            .attr('id', 'enemy')
-            .attr('filter', 'url(#enemy_filter)')
-            .attr('width', PLAYER_SIZE)
-            .attr('height', PLAYER_SIZE)
-            .attr('x', WIDTH/2 - PLAYER_SIZE/2)
+        var enemy = d3.select('#' + ENEMY_ID)
+            .attr('width', RECT_SIZE)
+            .attr('height', RECT_SIZE)
+            .attr('x', WIDTH/2 - RECT_SIZE/2)
             .attr('y', HEIGHT/4)
             .style('fill', 'green');
 
@@ -118,36 +117,17 @@
             var point = d3.mouse(this);
             player.transition()
                 .duration(50)
-                .attr('x', point[0] - PLAYER_SIZE/2);
-        }
-
-        function fireBullet() {
-            svg.append('circle')
-                    .attr('cx', getPlayerX() + PLAYER_SIZE/2)
-                    .attr('cy', HEIGHT - PLAYER_SIZE - PADDING - BULLET_RADIUS)
-                    .attr('r', BULLET_RADIUS)
-                    .attr('fill', 'red')
-                .transition()
-                    .duration(700)
-                    .attr('cy', -BULLET_RADIUS)
-                    .ease(d3.easeLinear)
-                    .remove();
+                .attr('x', point[0] - RECT_SIZE/2);
         }
 
         function moveEnemy() {
-            enemy.attr('x', function() {
-                var enemyX = getEnemyX();
+            var enemyX = getEnemyX();
 
-                //if border
-                if (enemyX > WIDTH - PLAYER_SIZE || enemyX < 0){
-                    MOVE_DELTA *= -1;
-                }
-                return enemyX += MOVE_DELTA;
-            })
-            .call(detectCollision); //call a collision detection function
-
-            //call itself to do an infinite loop
-            window.requestAnimationFrame(moveEnemy);
+            //if border
+            if (enemyX > WIDTH - RECT_SIZE || enemyX < 0){
+                MOVE_DELTA *= -1;
+            }
+            return enemyX += MOVE_DELTA;
         }
 
         function detectCollision() {
@@ -163,8 +143,8 @@
                     var bulletX = box.x;
 
                     //if collision
-                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + PLAYER_SIZE) {
-                        if(bulletY + BULLET_RADIUS <= enemyY + PLAYER_SIZE && bulletY + BULLET_RADIUS >= enemyY) {
+                    if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + RECT_SIZE) {
+                        if(bulletY + BULLET_RADIUS <= enemyY + RECT_SIZE && bulletY + BULLET_RADIUS >= enemyY) {
                             d3.select(this).remove();
                             d3.select('.score').html(++SCORE);
 
@@ -178,8 +158,30 @@
                 });
         }
 
-        //start the enemy moving loop
-        window.requestAnimationFrame(moveEnemy);
+        function fireBullet() {
+            svg.append('circle')
+                    .attr('cx', getPlayerX() + RECT_SIZE/2)
+                    .attr('cy', HEIGHT - RECT_SIZE - PADDING - BULLET_RADIUS)
+                    .attr('r', BULLET_RADIUS)
+                    .attr('fill', 'red')
+                .transition()
+                    .duration(700)
+                    .attr('cy', -BULLET_RADIUS)
+                    .ease(d3.easeLinear)
+                    .remove();
+        }
+
+        function loop() {
+            //move enemy
+            enemy.attr('x', moveEnemy)
+                .call(detectCollision);
+
+            //call itself to do an infinite loop
+            window.requestAnimationFrame(loop);
+        }
+
+        //start the loop
+        window.requestAnimationFrame(loop);
 
     </script>
 </body>
