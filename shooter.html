@@ -21,6 +21,7 @@
             font-family: Helvetica;
             font-size: 20px;
             font-weight: bold;
+            user-select: none;
         }
 
         svg {
@@ -39,7 +40,11 @@
             fill: #6BD42A;
         }
 
-        ellipse {
+        #enemy_life {
+            fill: #FF3030;
+        }
+
+        .bullet {
             fill: #F59090;
         }
 
@@ -84,6 +89,7 @@
             </defs>
             <rect id="player" filter="url(#shadow)"></rect>
             <rect id="enemy" filter="url(#shadow)"></rect>
+            <rect id="enemy_life"></rect>
         </svg>
         <div class="overlay"><span>You've Won!</span></div>
     </div>
@@ -97,6 +103,7 @@
         var PADDING = 5;
         var PLAYER_ID = 'player';
         var ENEMY_ID = 'enemy';
+        var ENEMY_LIFE_ID = ENEMY_ID + '_life';
         var RECT_SIZE = 40;
         var RECT_RADIUS = 5;
         var MOVE_DELTA = 2;
@@ -130,6 +137,14 @@
         var enemy = d3.select('#' + ENEMY_ID)
             .attr('width', RECT_SIZE)
             .attr('height', RECT_SIZE)
+            .attr('x', WIDTH/2 - RECT_SIZE/2)
+            .attr('y', HEIGHT/4)
+            .attr('rx', RECT_RADIUS)
+            .attr('ry', RECT_RADIUS);
+
+        var enemy_life = d3.select('#' + ENEMY_LIFE_ID)
+            .attr('width', RECT_SIZE)
+            .attr('height', 0)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
             .attr('y', HEIGHT/4)
             .attr('rx', RECT_RADIUS)
@@ -170,10 +185,15 @@
                             d3.select(this).remove();
                             d3.select('.score').html(++SCORE);
 
+                            //decrese life
+                            d3.select('#' + ENEMY_LIFE_ID)
+                                .attr('height', SCORE*RECT_SIZE/MAX_SCORE);
+
                             //if won
                             if (SCORE >= MAX_SCORE) {
                                 d3.select('.overlay')
                                     .style('display', 'flex');
+                                
                             }
                         }
                     }
@@ -182,6 +202,7 @@
 
         function fireBullet() {
             svg.append('ellipse')
+                    .attr('class', 'bullet')
                     .attr('cx', getPlayerX() + RECT_SIZE/2)
                     .attr('cy', HEIGHT - RECT_SIZE - PADDING - BULLET_RADIUS)
                     .attr('ry', BULLET_RADIUS)
@@ -195,10 +216,12 @@
 
         function loop() {
             //move enemy
-            enemy.attr('x', moveEnemy)
+            var newX = moveEnemy();
+            enemy.attr('x', newX)
                 .call(detectCollision);
+            enemy_life.attr('x', newX);
 
-            //call itself to do an infinite loop
+            //call itself
             window.requestAnimationFrame(loop);
         }
 
