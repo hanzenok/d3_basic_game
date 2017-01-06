@@ -1,0 +1,69 @@
+body {
+    margin: 5px;
+}
+
+.container {
+    position: relative;
+    cursor: none;
+}
+
+.failed_shots_container {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    color: gray;
+    font-family: Helvetica;
+    font-size: 20px;
+    font-weight: bold;
+    user-select: none;
+}
+
+svg {
+    display: block;
+    margin: auto;
+    border: 2px solid lightgray;
+    border-radius: 20px;
+    background-color: rgb(230, 230, 230);
+}
+
+#player {
+    fill: #8A8A88;
+}
+
+#enemy {
+    fill: #6BD42A;
+}
+
+#enemy_life {
+    fill: #FF3030;
+}
+
+.bullet {
+    fill: #F59090;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(56, 95, 158, 0.8);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay span {
+    color: white;
+    font-family: Helvetica;
+    font-size: 80px;
+    font-weight: bold;
+}
+
+.overlay .refresh {
+    font-size: 15px;
+}

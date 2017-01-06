@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="failed_shots_container">
+            <span class="failed_shots">0</span>
+            <span>/10</span>
+        </div>
+        <svg>
+            <defs>
+                <filter id="shadow" x="0" y="0" width="120%" height="120%">
+                    <feOffset result="offOut" in="SourceGraphic" dx="2" dy="2" />
+                    <feColorMatrix result="matrixOut" in="offOut" type="matrix" 
+                    values="0.5 0 0 0 0 0 0.5 0 0 0 0 0 0.5 0 0 0 0 0 1 0" />
+                    <feGaussianBlur result="blurOut" in="matrixOut" stdDeviation="2" />
+                    <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+                </filter>
+            </defs>
+            <rect id="player" filter="url(#shadow)"></rect>
+            <rect id="enemy" filter="url(#shadow)"></rect>
+            <rect id="enemy_life"></rect>
+        </svg>
+        <div id="won" class="overlay">
+            <span>You've Won!</span>
+            <span class="refresh">(Refresh to Restart)</span>
+        </div>
+        <div id="lost" class="overlay">
+            <span>You've Lost!</span>
+            <span class="refresh">(Refresh to Restart)</span>
+        </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="script.js"></script>
+</body>
