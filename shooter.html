@@ -39,7 +39,7 @@
             fill: #6BD42A;
         }
 
-        circle {
+        ellipse {
             fill: #F59090;
         }
 
@@ -100,7 +100,7 @@
         var RECT_SIZE = 40;
         var RECT_RADIUS = 5;
         var MOVE_DELTA = 2;
-        var BULLET_RADIUS = 5;
+        var BULLET_RADIUS = 6;
         var SCORE = 0;
         var MAX_SCORE = 20;
 
@@ -158,11 +158,11 @@
             var enemyY = getEnemyY();
   
             //every bullet
-            d3.selectAll('circle')
+            d3.selectAll('ellipse')
                 .each(function() {
                     var box = this.getBBox();
-                    var bulletY = box.y;
                     var bulletX = box.x;
+                    var bulletY = box.y;
 
                     //if collision
                     if (bulletX + BULLET_RADIUS >= enemyX && bulletX - BULLET_RADIUS <= enemyX + RECT_SIZE) {
@@ -181,10 +181,11 @@
         }
 
         function fireBullet() {
-            svg.append('circle')
+            svg.append('ellipse')
                     .attr('cx', getPlayerX() + RECT_SIZE/2)
                     .attr('cy', HEIGHT - RECT_SIZE - PADDING - BULLET_RADIUS)
-                    .attr('r', BULLET_RADIUS)
+                    .attr('ry', BULLET_RADIUS)
+                    .attr('rx', BULLET_RADIUS/2)
                 .transition()
                     .duration(700)
                     .attr('cy', -BULLET_RADIUS)
