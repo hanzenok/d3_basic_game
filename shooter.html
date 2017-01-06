@@ -17,13 +17,30 @@
             width: 100%;
             display: flex;
             justify-content: center;
+            color: gray;
+            font-family: Helvetica;
+            font-size: 20px;
+            font-weight: bold;
         }
 
         svg {
             display: block;
             margin: auto;
-            border: 2px solid black;
-            background-color: lightgray;
+            border: 2px solid lightgray;
+            border-radius: 20px;
+            background-color: rgb(230, 230, 230);
+        }
+
+        #player {
+            fill: #8A8A88;
+        }
+
+        #enemy {
+            fill: #6BD42A;
+        }
+
+        circle {
+            fill: #F59090;
         }
 
         .overlay {
@@ -52,14 +69,16 @@
 
     <div class="container">
         <div class="score_container">
-            <span>score:</span>
+            <span>Score:</span>
             <span class="score">0</span>
         </div>
         <svg>
             <defs>
-                <filter id="shadow" x="0" y="0" width="200%" height="200%">
-                    <feOffset result="offOut" in="SourceAlpha" dx="1" dy="1" />
-                    <feGaussianBlur result="blurOut" in="offOut" stdDeviation="3" />
+                <filter id="shadow" x="0" y="0" width="120%" height="120%">
+                    <feOffset result="offOut" in="SourceGraphic" dx="2" dy="2" />
+                    <feColorMatrix result="matrixOut" in="offOut" type="matrix" 
+                    values="0.5 0 0 0 0 0 0.5 0 0 0 0 0 0.5 0 0 0 0 0 1 0" />
+                    <feGaussianBlur result="blurOut" in="matrixOut" stdDeviation="2" />
                     <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
                 </filter>
             </defs>
@@ -79,6 +98,7 @@
         var PLAYER_ID = 'player';
         var ENEMY_ID = 'enemy';
         var RECT_SIZE = 40;
+        var RECT_RADIUS = 5;
         var MOVE_DELTA = 2;
         var BULLET_RADIUS = 5;
         var SCORE = 0;
@@ -103,7 +123,8 @@
             .attr('height', RECT_SIZE)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
             .attr('y', HEIGHT - RECT_SIZE - PADDING)
-            .style('fill', 'black');
+            .attr('rx', RECT_RADIUS)
+            .attr('ry', RECT_RADIUS);
         
         //enemy
         var enemy = d3.select('#' + ENEMY_ID)
@@ -111,7 +132,8 @@
             .attr('height', RECT_SIZE)
             .attr('x', WIDTH/2 - RECT_SIZE/2)
             .attr('y', HEIGHT/4)
-            .style('fill', 'green');
+            .attr('rx', RECT_RADIUS)
+            .attr('ry', RECT_RADIUS);
 
         function movePlayer() {
             var point = d3.mouse(this);
@@ -163,7 +185,6 @@
                     .attr('cx', getPlayerX() + RECT_SIZE/2)
                     .attr('cy', HEIGHT - RECT_SIZE - PADDING - BULLET_RADIUS)
                     .attr('r', BULLET_RADIUS)
-                    .attr('fill', 'red')
                 .transition()
                     .duration(700)
                     .attr('cy', -BULLET_RADIUS)
