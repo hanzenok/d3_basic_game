@@ -9,6 +9,7 @@
         
         .container {
             position: relative;
+            cursor: none;
         }
         
         .failed_shots_container {
@@ -56,6 +57,7 @@
             height: 100%;
             background-color: rgba(56, 95, 158, 0.8);
             display: none;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
@@ -67,6 +69,10 @@
             font-weight: bold;
         }
 
+        .overlay .refresh {
+            font-size: 15px;
+        }
+
     </style>
 </head>
 
@@ -74,7 +80,6 @@
 
     <div class="container">
         <div class="failed_shots_container">
-            <span>Missed:&nbsp;</span>
             <span class="failed_shots">0</span>
             <span>/10</span>
         </div>
@@ -92,8 +97,14 @@
             <rect id="enemy" filter="url(#shadow)"></rect>
             <rect id="enemy_life"></rect>
         </svg>
-        <div id="won" class="overlay"><span>You've Won!</span></div>
-        <div id="lost" class="overlay"><span>You've Lost!</span></div>
+        <div id="won" class="overlay">
+            <span>You've Won!</span>
+            <span class="refresh">(Refresh to Restart)</span>
+        </div>
+        <div id="lost" class="overlay">
+            <span>You've Lost!</span>
+            <span class="refresh">(Refresh to Restart)</span>
+        </div>
     </div>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
